@@ -13,10 +13,8 @@ from esphome.const import (
     CONF_ON_ENROLLMENT_DONE,
     CONF_ON_ENROLLMENT_FAILED,
     CONF_ON_ENROLLMENT_SCAN,
-    CONF_ON_FINGER_SCAN_START,
     CONF_ON_FINGER_SCAN_MATCHED,
     CONF_ON_FINGER_SCAN_UNMATCHED,
-    CONF_ON_FINGER_SCAN_MISPLACED,
     CONF_PASSWORD,
     CONF_SENSING_PIN,
     CONF_SPEED,
@@ -30,6 +28,8 @@ AUTO_LOAD = ["binary_sensor", "sensor"]
 MULTI_CONF = True
 
 CONF_FINGERPRINT_GROW_ID = "fingerprint_grow_id"
+CONF_ON_FINGER_SCAN_MISPLACED = "on_finger_scan_misplaced"
+CONF_ON_FINGER_SCAN_START = "on_finger_scan_start"
 
 fingerprint_grow_ns = cg.esphome_ns.namespace("fingerprint_grow")
 FingerprintGrowComponent = fingerprint_grow_ns.class_(
