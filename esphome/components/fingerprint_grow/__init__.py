@@ -31,6 +31,7 @@ AUTO_LOAD = ["binary_sensor", "sensor"]
 MULTI_CONF = True
 
 CONF_FINGERPRINT_GROW_ID = "fingerprint_grow_id"
+CONF_SENSOR_POWER_PIN = "sensor_power_pin"
 
 fingerprint_grow_ns = cg.esphome_ns.namespace("fingerprint_grow")
 FingerprintGrowComponent = fingerprint_grow_ns.class_(
@@ -107,6 +108,7 @@ CONFIG_SCHEMA = (
         {
             cv.GenerateID(): cv.declare_id(FingerprintGrowComponent),
             cv.Optional(CONF_SENSING_PIN): pins.gpio_input_pin_schema,
+            cv.Optional(CONF_SENSOR_POWER_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_PASSWORD): cv.uint32_t,
             cv.Optional(CONF_NEW_PASSWORD): cv.uint32_t,
             cv.Optional(CONF_ON_FINGER_SCAN_START): automation.validate_automation(
@@ -187,6 +189,10 @@ async def to_code(config):
     if CONF_SENSING_PIN in config:
         sensing_pin = await cg.gpio_pin_expression(config[CONF_SENSING_PIN])
         cg.add(var.set_sensing_pin(sensing_pin))
+
+    if CONF_SENSOR_POWER_PIN in config:
+        sensor_power_pin = await cg.gpio_pin_expression(config[CONF_SENSOR_POWER_PIN])
+        cg.add(var.set_sensor_power_pin(sensor_power_pin))
 
     for conf in config.get(CONF_ON_FINGER_SCAN_START, []):
         trigger = cg.new_Pvariable(conf[CONF_TRIGGER_ID], var)

@@ -53,7 +53,10 @@ void FingerprintGrowComponent::update() {
 
 void FingerprintGrowComponent::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Grow Fingerprint Reader...");
+
   this->has_sensing_pin_ = (this->sensing_pin_ != nullptr);
+  this->has_power_pin_ = (this->sensor_power_pin_ != nullptr);
+
   if (this->check_password_()) {
     if (this->new_password_ != -1) {
       if (this->set_password_())
@@ -336,6 +339,11 @@ void FingerprintGrowComponent::aura_led_control(uint8_t state, uint8_t speed, ui
 }
 
 uint8_t FingerprintGrowComponent::send_command_() {
+
+  if (this->has_power_pin_) {
+    this->sensor_power_pin_->digital_write(true);
+  }
+
   this->write((uint8_t) (START_CODE >> 8));
   this->write((uint8_t) (START_CODE & 0xFF));
   this->write(this->address_[0]);
@@ -426,6 +434,9 @@ uint8_t FingerprintGrowComponent::send_command_() {
               ESP_LOGE(TAG, "Unknown response received from reader: %d", this->data_[0]);
               break;
           }
+          if (this->has_power_pin_) {
+            this->sensor_power_pin_->digital_write(false);
+          }
           return this->data_[0];
         }
         break;
@@ -437,11 +448,24 @@ uint8_t FingerprintGrowComponent::send_command_() {
   return TIMEOUT;
 }
 
+void FingerprintGrowComponent::sensor_wakeup_() {
+  if (this->has_power_pin_) {
+    this->sensor_power_pin_->digital_write(true);
+  }
+}
+
+void FingerprintGrowComponent::sensor_sleep_() {
+  if (this->has_power_pin_) {
+    this->sensor_power_pin_->digital_write(false);
+  }
+}
+
 void FingerprintGrowComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "GROW_FINGERPRINT_READER:");
   ESP_LOGCONFIG(TAG, "  System Identifier Code: 0x%.4X", this->system_identifier_code_);
   ESP_LOGCONFIG(TAG, "  Touch Sensing Pin: %s",
                 this->has_sensing_pin_ ? this->sensing_pin_->dump_summary().c_str() : "None");
+  ESP_LOGCONFIG(TAG, "  Sensor Power Pin: %s", this->has_power_pin_ ? this->sensor_power_pin_->dump_summary().c_str() : "None");
   LOG_UPDATE_INTERVAL(this);
   LOG_SENSOR("  ", "Fingerprint Count", this->fingerprint_count_sensor_);
   ESP_LOGCONFIG(TAG, "    Current Value: %d", (uint16_t) this->fingerprint_count_sensor_->get_state());

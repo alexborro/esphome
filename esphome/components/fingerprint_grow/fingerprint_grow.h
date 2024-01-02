@@ -63,6 +63,7 @@ enum GrowResponse {
   INVALID_IMAGE = 0x15,
   FLASH_ERR = 0x18,
   INVALID_REG = 0x1A,
+  HANDSHAKE_SIGN = 0x55,
   BAD_PACKET = 0xFE,
   TIMEOUT = 0xFF,
 };
@@ -99,6 +100,7 @@ class FingerprintGrowComponent : public PollingComponent, public uart::UARTDevic
     this->address_[3] = (uint8_t) (address & 0xFF);
   }
   void set_sensing_pin(GPIOPin *sensing_pin) { this->sensing_pin_ = sensing_pin; }
+  void set_sensor_power_pin(GPIOPin *sensor_power_pin) { this->sensor_power_pin_ = sensor_power_pin; }
   void set_password(uint32_t password) { this->password_ = password; }
   void set_new_password(uint32_t new_password) { this->new_password_ = new_password; }
   void set_fingerprint_count_sensor(sensor::Sensor *fingerprint_count_sensor) {
@@ -161,6 +163,8 @@ class FingerprintGrowComponent : public PollingComponent, public uart::UARTDevic
   bool get_parameters_();
   void get_fingerprint_count_();
   uint8_t send_command_();
+  void sensor_wakeup_();
+  void sensor_sleep_();
 
   std::vector<uint8_t> data_ = {};
   uint8_t address_[4] = {0xFF, 0xFF, 0xFF, 0xFF};
@@ -168,11 +172,13 @@ class FingerprintGrowComponent : public PollingComponent, public uart::UARTDevic
   uint32_t password_ = 0x0;
   uint32_t new_password_ = -1;
   GPIOPin *sensing_pin_{nullptr};
+  GPIOPin *sensor_power_pin_{nullptr};
   uint8_t enrollment_image_ = 0;
   uint16_t enrollment_slot_ = ENROLLMENT_SLOT_UNUSED;
   uint8_t enrollment_buffers_ = 5;
   bool waiting_removal_ = false;
   bool has_sensing_pin_ = false;
+  bool has_power_pin_ = false;
   uint32_t last_aura_led_control_ = 0;
   uint16_t last_aura_led_duration_ = 0;
   uint16_t system_identifier_code_ = 0;
