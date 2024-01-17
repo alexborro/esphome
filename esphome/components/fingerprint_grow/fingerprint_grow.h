@@ -18,8 +18,6 @@ static const uint16_t ENROLLMENT_SLOT_UNUSED = 0xFFFF;
 // The datasheet says a max wake up time of "around" 50ms, so let's wait a little bit more
 static const uint8_t WAIT_FOR_WAKE_UP_MS = 100;
 
-static const uint16_t INACTIVE_PERIOD_TO_SLEEP_MS = 1000;
-
 enum GrowPacketType {
   COMMAND = 0x01,
   DATA = 0x02,
@@ -108,6 +106,7 @@ class FingerprintGrowComponent : public PollingComponent, public uart::UARTDevic
   void set_sensor_power_pin(GPIOPin *sensor_power_pin) { this->sensor_power_pin_ = sensor_power_pin; }
   void set_password(uint32_t password) { this->password_ = password; }
   void set_new_password(uint32_t new_password) { this->new_password_ = new_password; }
+  void set_idle_period_to_sleep_ms(uint32_t period_ms) { this->idle_period_to_sleep_ms_ = period_ms; }
   void set_fingerprint_count_sensor(sensor::Sensor *fingerprint_count_sensor) {
     this->fingerprint_count_sensor_ = fingerprint_count_sensor;
   }
@@ -190,6 +189,7 @@ class FingerprintGrowComponent : public PollingComponent, public uart::UARTDevic
   uint32_t last_aura_led_control_ = 0;
   uint16_t last_aura_led_duration_ = 0;
   uint16_t system_identifier_code_ = 0;
+  uint32_t idle_period_to_sleep_ms_ = UINT32_MAX;
   sensor::Sensor *fingerprint_count_sensor_{nullptr};
   sensor::Sensor *status_sensor_{nullptr};
   sensor::Sensor *capacity_sensor_{nullptr};

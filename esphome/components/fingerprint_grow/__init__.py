@@ -32,6 +32,7 @@ MULTI_CONF = True
 
 CONF_FINGERPRINT_GROW_ID = "fingerprint_grow_id"
 CONF_SENSOR_POWER_PIN = "sensor_power_pin"
+CONF_IDLE_PERIOD_TO_SLEEP = "idle_period_to_sleep"
 
 fingerprint_grow_ns = cg.esphome_ns.namespace("fingerprint_grow")
 FingerprintGrowComponent = fingerprint_grow_ns.class_(
@@ -105,11 +106,12 @@ validate_aura_led_colors = cv.enum(AURA_LED_COLORS, upper=True)
 
 
 def validate(config):
-    if CONF_SENSOR_POWER_PIN in config:
-        if CONF_SENSING_PIN not in config:
-            raise cv.Invalid(
-                "You cannot use the Sensor Power Pin without a Sensing Pin"
-            )
+    if CONF_SENSOR_POWER_PIN in config and CONF_SENSING_PIN not in config:
+        raise cv.Invalid("You cannot use the Sensor Power Pin without a Sensing Pin")
+    if CONF_IDLE_PERIOD_TO_SLEEP in config and CONF_SENSOR_POWER_PIN not in config:
+        raise cv.Invalid(
+            "You cannot have an Idle Period to Sleep without a Sensor Power Pin"
+        )
     return config
 
 
@@ -119,6 +121,9 @@ CONFIG_SCHEMA = cv.All(
             cv.GenerateID(): cv.declare_id(FingerprintGrowComponent),
             cv.Optional(CONF_SENSING_PIN): pins.gpio_input_pin_schema,
             cv.Optional(CONF_SENSOR_POWER_PIN): pins.gpio_output_pin_schema,
+            cv.Optional(
+                CONF_IDLE_PERIOD_TO_SLEEP
+            ): cv.positive_time_period_milliseconds,
             cv.Optional(CONF_PASSWORD): cv.uint32_t,
             cv.Optional(CONF_NEW_PASSWORD): cv.uint32_t,
             cv.Optional(CONF_ON_FINGER_SCAN_START): automation.validate_automation(
@@ -204,6 +209,10 @@ async def to_code(config):
     if CONF_SENSOR_POWER_PIN in config:
         sensor_power_pin = await cg.gpio_pin_expression(config[CONF_SENSOR_POWER_PIN])
         cg.add(var.set_sensor_power_pin(sensor_power_pin))
+
+    if CONF_IDLE_PERIOD_TO_SLEEP in config:
+        idle_period_to_sleep_ms = config[CONF_IDLE_PERIOD_TO_SLEEP]
+        cg.add(var.set_idle_period_to_sleep_ms(idle_period_to_sleep_ms))
 
     for conf in config.get(CONF_ON_FINGER_SCAN_START, []):
         trigger = cg.new_Pvariable(conf[CONF_TRIGGER_ID], var)
