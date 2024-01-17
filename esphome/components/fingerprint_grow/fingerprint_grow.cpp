@@ -71,7 +71,7 @@ void FingerprintGrowComponent::setup() {
   }
 
   this->sensor_sleep_();  // Place the sensor in a known (sleep/off) state.
-  delay(100);   // This delay guarantees the sensor will in fact loose power.
+  delay(100);   // This delay guarantees the sensor will in fact be powered power.
 
   if (this->check_password_()) {
     if (this->new_password_ != -1) {
@@ -354,7 +354,7 @@ void FingerprintGrowComponent::aura_led_control(uint8_t state, uint8_t speed, ui
   }
 }
 
-uint8_t FingerprintGrowComponent::transfer_(std::vector<uint8_t> *pDataBuffer) {
+uint8_t FingerprintGrowComponent::transfer_(std::vector<uint8_t> *p_data_buffer) {
   this->write((uint8_t) (START_CODE >> 8));
   this->write((uint8_t) (START_CODE & 0xFF));
   this->write(this->address_[0]);
@@ -363,12 +363,12 @@ uint8_t FingerprintGrowComponent::transfer_(std::vector<uint8_t> *pDataBuffer) {
   this->write(this->address_[3]);
   this->write(COMMAND);
 
-  uint16_t wire_length = pDataBuffer->size() + 2;
+  uint16_t wire_length = p_data_buffer->size() + 2;
   this->write((uint8_t) (wire_length >> 8));
   this->write((uint8_t) (wire_length & 0xFF));
 
   uint16_t sum = ((wire_length) >> 8) + ((wire_length) & 0xFF) + COMMAND;
-  for (auto data : *pDataBuffer) {
+  for (auto data : *p_data_buffer) {
     this->write(data);
     sum += data;
   }
@@ -376,7 +376,7 @@ uint8_t FingerprintGrowComponent::transfer_(std::vector<uint8_t> *pDataBuffer) {
   this->write((uint8_t) (sum >> 8));
   this->write((uint8_t) (sum & 0xFF));
 
-  pDataBuffer->clear();
+  p_data_buffer->clear();
 
   uint8_t byte;
   uint16_t idx = 0, length = 0;
@@ -423,9 +423,9 @@ uint8_t FingerprintGrowComponent::transfer_(std::vector<uint8_t> *pDataBuffer) {
         length |= byte;
         break;
       default:
-        pDataBuffer->push_back(byte);
+        p_data_buffer->push_back(byte);
         if ((idx - 8) == length) {
-          switch ((*pDataBuffer)[0]) {
+          switch ((*p_data_buffer)[0]) {
             case OK:
             case NO_FINGER:
             case IMAGE_FAIL:
@@ -445,18 +445,18 @@ uint8_t FingerprintGrowComponent::transfer_(std::vector<uint8_t> *pDataBuffer) {
               ESP_LOGE(TAG, "Reader failed to process request");
               break;
             default:
-              ESP_LOGE(TAG, "Unknown response received from reader: 0x%.2X", (*pDataBuffer)[0]);
+              ESP_LOGE(TAG, "Unknown response received from reader: 0x%.2X", (*p_data_buffer)[0]);
               break;
           }
           this->last_transfer_ms_ = millis();
-          return (*pDataBuffer)[0];
+          return (*p_data_buffer)[0];
         }
         break;
     }
     idx++;
   }
   ESP_LOGE(TAG, "No response received from reader");
-  (*pDataBuffer)[0] = TIMEOUT;
+  (*p_data_buffer)[0] = TIMEOUT;
   this->last_transfer_ms_ = millis();
   return TIMEOUT;
 }
@@ -467,7 +467,6 @@ uint8_t FingerprintGrowComponent::send_command_() {
 }
 
 void FingerprintGrowComponent::sensor_wakeup_() {
-
   // Immediately return if there is no power pin or the sensor is already on
   if ((this->has_power_pin_ == false) || (this->is_sensor_awake_)) return;
 
@@ -514,7 +513,6 @@ void FingerprintGrowComponent::sensor_wakeup_() {
 }
 
 void FingerprintGrowComponent::sensor_sleep_() {
-
   // Immediately return if the power pin feature is not implemented
   if (this->has_power_pin_ == false) return;
 
