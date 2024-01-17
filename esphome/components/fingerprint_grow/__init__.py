@@ -103,7 +103,17 @@ AURA_LED_COLORS = {
 }
 validate_aura_led_colors = cv.enum(AURA_LED_COLORS, upper=True)
 
-CONFIG_SCHEMA = (
+
+def validate(config):
+    if CONF_SENSOR_POWER_PIN in config:
+        if CONF_SENSING_PIN not in config:
+            raise cv.Invalid(
+                "You cannot use the Sensor Power Pin without a Sensing Pin"
+            )
+    return config
+
+
+CONFIG_SCHEMA = cv.All(
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(FingerprintGrowComponent),
@@ -170,7 +180,8 @@ CONFIG_SCHEMA = (
         }
     )
     .extend(cv.polling_component_schema("500ms"))
-    .extend(uart.UART_DEVICE_SCHEMA)
+    .extend(uart.UART_DEVICE_SCHEMA),
+    validate,
 )
 
 
