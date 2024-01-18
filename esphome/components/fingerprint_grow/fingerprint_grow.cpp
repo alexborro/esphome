@@ -67,10 +67,18 @@ void FingerprintGrowComponent::setup() {
     this->sensing_pin_->setup();
   }
   if (this->has_power_pin_) {
+    // Starts with output low (disabling power) to avoid glitches in the sensor
+    this->sensor_power_pin_->digital_write(false);
     this->sensor_power_pin_->setup();
+
+    // If the user didn't specify an idle period to sleep, applies the default.
+    if (this->idle_period_to_sleep_ms_ == UINT32_MAX) {
+      this->idle_period_to_sleep_ms_ = DEFAULT_IDLE_PERIOD_TO_SLEEP_MS;
+    }
   }
 
-  this->sensor_sleep_();  // Place the sensor in a known (sleep/off) state.
+  // Place the sensor in a known (sleep/off) state and sync internal var state.
+  this->sensor_sleep_();
   delay(100);   // This delay guarantees the sensor will in fact be powered power.
 
   if (this->check_password_()) {

@@ -15,8 +15,10 @@ static const uint16_t START_CODE = 0xEF01;
 
 static const uint16_t ENROLLMENT_SLOT_UNUSED = 0xFFFF;
 
-// The datasheet says a max wake up time of "around" 50ms, so let's wait a little bit more
-static const uint8_t WAIT_FOR_WAKE_UP_MS = 100;
+// The datasheet says a max wake up time of of 200ms.
+static const uint8_t WAIT_FOR_WAKE_UP_MS = 200;
+
+static const uint32_t DEFAULT_IDLE_PERIOD_TO_SLEEP_MS = 5000;
 
 enum GrowPacketType {
   COMMAND = 0x01,
